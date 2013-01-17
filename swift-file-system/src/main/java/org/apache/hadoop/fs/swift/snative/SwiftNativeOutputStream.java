@@ -106,6 +106,7 @@ class SwiftNativeOutputStream extends OutputStream {
 
   private void partUpload() throws IOException {
     partUpload = true;
+    backupStream.close();
     nativeStore.uploadFilePart(new Path(key), partNumber, new FileInputStream(backupFile), backupFile.length());
     backupFile = newBackupFile();
     backupStream = new BufferedOutputStream(new FileOutputStream(backupFile));

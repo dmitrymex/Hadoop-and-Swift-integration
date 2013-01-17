@@ -296,9 +296,9 @@ public class SwiftRestClient {
 
 
     Properties props = RestClientBindings.bind(filesystemURI, conf);
-    String stringAuthUri = getOption(props, SWIFT_AUTH_PROPERTY);
-    this.username = getOption(props, SWIFT_USERNAME_PROPERTY);
-    this.password = getOption(props, SWIFT_PASSWORD_PROPERTY);
+    String stringAuthUri = props.getProperty(SWIFT_AUTH_PROPERTY);
+    this.username = props.getProperty(SWIFT_USERNAME_PROPERTY);
+    this.password = props.getProperty(SWIFT_PASSWORD_PROPERTY);
     //optional
     this.region = props.getProperty(SWIFT_REGION_PROPERTY);
     //tenant is optional
@@ -325,23 +325,6 @@ public class SwiftRestClient {
                                             + stringAuthUri, e);
     }
   }
-
-  /**
-   * Get a mandatory configuration option
-   * @param props property set
-   * @param key key
-   * @return value of the configuration
-   * @throws SwiftConfigurationException if there was no match for the key
-   */
-  private static String getOption(Properties props, String key) throws
-                                                    SwiftConfigurationException {
-    String val = props.getProperty(key);
-    if (val == null) {
-      throw new SwiftConfigurationException("Undefined property: " + key);
-    }
-    return val;
-  }
-
 
   private int getIntOption(Properties props, String key, int def) throws
                                                          SwiftConfigurationException {
@@ -747,22 +730,17 @@ public class SwiftRestClient {
       getDataAsInputStream(objectPath);
     } catch (SwiftInvalidResponseException ex) {
       if (ex.statusCode == SC_NOT_FOUND) {
-        final int status = putRequest(objectPath);
-        if (!isStatusCodeExpected(status,
-                                  SC_OK,
-                                  SC_CREATED,
-                                  SC_ACCEPTED,
-                                  SC_NO_CONTENT)) {
+        try {
+          putRequest(objectPath);
+        } catch (SwiftInvalidResponseException ex2) {
           throw new SwiftInvalidResponseException("Couldn't create container "
-                                                  + host +
-                                                  " for storing data in Swift." +
-                                                  " Try to create container " +
-                                                  host + " manually ",
-                                                  status,
-                                                  "PUT",
-                                                  null);
-        } else {
-          throw ex;
+              + host +
+              " for storing data in Swift." +
+              " Try to create container " +
+              host + " manually ",
+              ex2.statusCode,
+              "PUT",
+              ex2.uri);
         }
       }
     }
@@ -952,7 +930,7 @@ public class SwiftRestClient {
       if (method.getURI().toString().equals(authUri.toString())) {
         //unauth response from the AUTH URI itself.
         throw new SwiftConnectionException(
-          "Authentication failed, URI credentials are incorrect,"
+          "Authentication failed: either provided credentials are incorrect,"
           + " or Openstack Keystone is configured incorrectly. URL='"
           + authUri + "' "
           + "username={" + username + "} "
