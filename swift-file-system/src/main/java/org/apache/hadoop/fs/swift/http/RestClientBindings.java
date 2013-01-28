@@ -78,8 +78,8 @@ public final class RestClientBindings {
   public static String extractContainerName(String hostname) throws
                                                              SwiftConfigurationException {
     int i = hostname.indexOf(".");
-    if (i <= 0) {
-      throw invalidName(hostname);
+    if (i < 0) {
+      return hostname; 
     }
     return hostname.substring(0, i);
   }
@@ -98,15 +98,10 @@ public final class RestClientBindings {
   public static String extractServiceName(String hostname) throws
                                                            SwiftConfigurationException {
     int i = hostname.indexOf(".");
-    if (i <= 0) {
-      throw invalidName(hostname);
+    if (i < 0) {
+      return "";
     }
-    String service = hostname.substring(i + 1);
-    if (service.isEmpty() || service.contains(".")) {
-      //empty service contains dots in -not currently supported
-      throw invalidName(hostname);
-    }
-    return service;
+    return hostname.substring(i + 1);
   }
 
   public static String extractServiceName(URI uri) throws

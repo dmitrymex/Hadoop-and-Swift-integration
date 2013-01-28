@@ -120,8 +120,8 @@ public class SwiftNativeFileSystemStore {
     if (headers.length == 0) {
       throw new FileNotFoundException("Not Found " + path.toUri());
     }
-
-    boolean isDir = false;
+    
+    boolean isDir = isDir(path);
     long length = 0;
     long lastModified = System.currentTimeMillis();
     for (Header header : headers) {
@@ -151,6 +151,14 @@ public class SwiftNativeFileSystemStore {
       throw new SwiftException("Specified path " + path + " is incorrect", e);
     }
     return new FileStatus(length, isDir, 0, 0L, lastModified, correctSwiftPath);
+  }
+
+  private boolean isDir(Path path) throws SwiftConfigurationException, IOException {
+    
+    new Path()
+    
+    List<FileStatus> contents = listDirectory(toObjectPath(path));
+    return false;
   }
 
   public InputStream getObject(Path path) throws IOException {

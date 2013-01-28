@@ -494,7 +494,7 @@ public final class SwiftRestClient {
     return perform(uri, new GetMethodProcessor<byte[]>() {
       @Override
       public byte[] extractResult(GetMethod method) throws IOException {
-        if (method.getStatusCode() == SC_NOT_FOUND) {
+        if (method.getStatusCode() == SC_NOT_FOUND || method.getStatusCode() == SC_NO_CONTENT) {
           //no result
           throw new FileNotFoundException("Not found " + method.getURI());
         }
@@ -505,6 +505,7 @@ public final class SwiftRestClient {
       protected int[] getAllowedStatusCodes() {
         return new int[] {
           SC_OK,
+          SC_NO_CONTENT,
           SC_NOT_FOUND
         };
       }
@@ -753,7 +754,7 @@ public final class SwiftRestClient {
         if (LOG.isDebugEnabled()) {
           LOG.debug("authenticated against " + endpointURI);
         }
-        createDefaultContainer(filesystemURI.toString());
+        createDefaultContainer(RestClientBindings.extractContainerName(filesystemURI));
         return accessToken;
       }
     });
